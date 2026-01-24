@@ -1,0 +1,1099 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ChefHat, Mail, Lock, User, Eye, EyeOff, Sparkles, ArrowRight, Shield, Wand2, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+
+const emailSchema = z.string().email('Please enter a valid email address');
+const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+
+const Auth = () => {
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('mode') !== 'signup' ? 'login' : 'signup');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [magicLinkEmail, setMagicLinkEmail] = useState('');
+  const [showManualConfirm, setShowManualConfirm] = useState(false);
+  const [confirmationToken, setConfirmationToken] = useState('');
+  const [showSignupPopup, setShowSignupPopup] = useState(false);
+  const [signupEmail, setSignupEmail] = useState('');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleResendConfirmation = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/#`,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: 'Resend failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Confirmation email sent',
+          description: `Check ${email} for the confirmation link`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to resend confirmation email',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // const handleTokenLogin = async () => {
+  //   if (!loginToken) return;
+    
+  //   setLoading(true);
+    
+  //   try {
+  //     const tokenInfo = TokenManager.getTokenInfo(loginToken);
+      
+  //     if (!tokenInfo) {
+  //       toast({
+  //         title: 'Invalid Token',
+  //         description: 'Token is invalid or expired. Please sign in again.',
+  //         variant: 'destructive',
+  //       });
+  //       return;
+  //     }
+      
+  //     // Try to sign in with the email associated with the token
+  //     const { error, data } = await supabase.auth.signInWithPassword({
+  //       email: tokenInfo.email,
+  //       password: 'token-auth', // This won't work, but we'll handle the error
+  //     });
+      
+  //     if (error) {
+  //       // If password auth fails, try magic link
+  //       const { error: otpError } = await supabase.auth.signInWithOtp({
+  //         email: tokenInfo.email,
+  //         options: {
+  //           emailRedirectTo: `${window.location.origin}/auth`,
+  //         },
+  //       });
+        
+  //       if (otpError) {
+  //         toast({
+  //           title: 'Token Login Failed',
+  //           description: 'Could not authenticate with token. Please use regular sign-in.',
+  //           variant: 'destructive',
+  //         });
+  //       } else {
+  //         toast({
+  //           title: 'Magic Link Sent',
+  //           description: `Check ${tokenInfo.email} for sign-in link.`,
+  //         });
+  //         setActiveTab('magic-link');
+  //         setMagicLinkEmail(tokenInfo.email);
+  //       }
+  //     } else {
+  //       toast({
+  //         title: 'Welcome back!',
+  //         description: 'Successfully signed in with token',
+  //       });
+  //       navigate('/recipes');
+  //     }
+  //   } catch (error) {
+  //     toast({
+  //       title: 'Error',
+  //       description: 'An unexpected error occurred during token login',
+  //       variant: 'destructive',
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  
+  // const handleTokenSelection = (token: string) => {
+  //   setLoginToken(token);
+  //   setActiveTab('token-login');
+  // };
+  
+  // const handleEmailVerification = async () => {
+  //   if (!verificationEmail) return;
+    
+  //   setLoading(true);
+    
+  //   try {
+  //     const { error } = await supabase.auth.resend({
+  //       type: 'signup',
+  //       email: verificationEmail,
+  //       options: {
+  //         emailRedirectTo: `${window.location.origin}/auth`,
+  //       },
+  //     });
+      
+  //     if (error) {
+  //       toast({
+  //         title: 'Verification failed',
+  //         description: error.message,
+  //         variant: 'destructive',
+  //       });
+  //     } else {
+  //       setEmailVerificationSent(true);
+  //       toast({
+  //         title: 'Verification email sent',
+  //         description: `Check ${verificationEmail} for the verification link`,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     toast({
+  //       title: 'Error',
+  //       description: 'Failed to send verification email',
+  //       variant: 'destructive',
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleManualConfirmation = async () => {
+    if (!confirmationToken || !magicLinkEmail) return;
+    
+    setLoading(true);
+    
+    try {
+      // Try to verify the token manually
+      const { data, error } = await supabase.auth.verifyOtp({
+        token: confirmationToken,
+        type: 'signup',
+        email: magicLinkEmail,
+      });
+
+      if (error) {
+        toast({
+          title: 'Verification failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else if (data.user) {
+        toast({
+          title: 'Email confirmed!',
+          description: 'Your account has been confirmed successfully.',
+        });
+        navigate('/recipes');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to verify confirmation code',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle magic link verification from URL parameters
+  useEffect(() => {
+    const handleMagicLinkVerification = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const error = hashParams.get('error');
+      const errorDescription = hashParams.get('error_description');
+
+      if (error) {
+        toast({
+          title: 'Authentication Error',
+          description: errorDescription || 'Failed to authenticate with magic link',
+          variant: 'destructive',
+        });
+        // Clear the hash
+        window.location.hash = '';
+        return;
+      }
+
+      if (accessToken && refreshToken) {
+        try {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (error) {
+            toast({
+              title: 'Session Error',
+              description: error.message,
+              variant: 'destructive',
+            });
+          } else if (data.session) {
+            toast({
+              title: 'Welcome back!',
+              description: 'Successfully signed in with magic link',
+            });
+            navigate('/recipes');
+          }
+        } catch (error) {
+          toast({
+            title: 'Authentication Error',
+            description: 'An unexpected error occurred during magic link verification',
+            variant: 'destructive',
+          });
+        }
+        
+        // Clear the hash parameters
+        window.location.hash = '';
+      }
+    };
+
+    handleMagicLinkVerification();
+  }, [navigate, toast]);
+
+  const validateForm = () => {
+    const newErrors: { email?: string; password?: string } = {};
+    
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      newErrors.email = emailResult.error.errors[0].message;
+    }
+    
+    const passwordResult = passwordSchema.safeParse(password);
+    if (!passwordResult.success) {
+      newErrors.password = passwordResult.error.errors[0].message;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleMagicLink = async () => {
+    if (!magicLinkEmail) return;
+    
+    setLoading(true);
+    
+    try {
+      console.log("Sending magic link to:", magicLinkEmail);
+      
+      // First try direct Supabase auth (bypass Edge Function for testing)
+      const { error: directError } = await supabase.auth.signInWithOtp({
+        email: magicLinkEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/#`,
+        },
+      });
+
+      if (directError) {
+        console.error("Direct Supabase error:", directError);
+        const errorMessage = directError.message?.toLowerCase() || '';
+        
+        // Check for rate limit errors
+        if (directError.status === 429 || errorMessage.includes('rate limit') || errorMessage.includes('too many') || errorMessage.includes('exceeds')) {
+          toast({
+            title: 'Too many requests',
+            description: 'Too many magic link requests. Please wait a few minutes before trying again.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+        
+        // Fallback to Edge Function
+        console.log("Trying Edge Function fallback...");
+        const { data, error } = await supabase.functions.invoke('check-email-and-send-magic-link', {
+          body: { email: magicLinkEmail }
+        });
+        
+        console.log("Magic link response:", { data, error });
+        
+        if (error) {
+          console.error("Function error:", error);
+          const errorMessage = error.message?.toLowerCase() || '';
+          
+          // Check for rate limit errors from edge function
+          if (error.status === 429 || errorMessage.includes('rate limit') || errorMessage.includes('wait')) {
+            toast({
+              title: 'Please wait',
+              description: `You can request another magic link in ${data?.remainingTime || 60} seconds.`,
+              variant: 'destructive',
+            });
+          } else {
+            toast({
+              title: 'Error',
+              description: error.message || 'Failed to send magic link',
+              variant: 'destructive',
+            });
+          }
+        } else if (data?.userExists === false) {
+          toast({
+            title: 'Email not found',
+            description: 'This email is not registered. Please sign up first.',
+            variant: 'destructive',
+          });
+        } else {
+          setMagicLinkSent(true);
+          toast({
+            title: 'Magic link sent!',
+            description: `Check ${magicLinkEmail} for your sign-in link. Also check spam folder.`,
+          });
+        }
+      } else {
+        console.log("Direct Supabase magic link sent successfully");
+        setMagicLinkSent(true);
+        toast({
+          title: 'Magic link sent!',
+          description: `Check ${magicLinkEmail} for your sign-in link. Also check spam folder.`,
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/#`,
+          scopes: 'profile email',
+        }
+      });
+
+      if (error) {
+        toast({
+          title: 'Google Sign In Failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to sign in with Google',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setLoading(true);
+    setErrors({});
+
+    try {
+      if (activeTab === 'login') {
+        // Handle login
+        console.log("Attempting login with email:", email);
+        
+        const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+        
+        console.log("Login response:", { error, data });
+        
+        if (error) {
+          console.error("Login error details:", error);
+          const errorMessage = error.message?.toLowerCase() || '';
+          
+          // Check for rate limit errors
+          if (error.status === 429 || errorMessage.includes('rate limit') || errorMessage.includes('too many') || errorMessage.includes('exceeds')) {
+            toast({
+              title: 'Too many login attempts',
+              description: 'You have made too many login attempts. Please try again in a few minutes.',
+              variant: 'destructive',
+            });
+          } else if (errorMessage.includes('Invalid login credentials')) {
+            toast({
+              title: 'Login failed',
+              description: 'Invalid email or password. Check your credentials or sign up.',
+              variant: 'destructive',
+            });
+          } else if (error.message.includes('Email not confirmed')) {
+            toast({
+              title: 'Email not confirmed',
+              description: 'Your account exists but email is not confirmed. You can use magic link to sign in.',
+              variant: 'destructive',
+              action: (
+                <button
+                  onClick={() => {
+                    setActiveTab('magic-link');
+                    setMagicLinkEmail(email);
+                  }}
+                  className="ml-2 underline text-sm"
+                >
+                  Use Magic Link
+                </button>
+              ),
+            });
+          } else {
+            toast({
+              title: 'Login error',
+              description: error.message || 'An error occurred during login',
+              variant: 'destructive',
+            });
+          }
+        } else {
+          console.log("Login successful:", data);
+          toast({
+            title: 'Welcome back!',
+            description: 'Successfully logged in',
+          });
+          navigate('/recipes');
+        }
+      } else {
+        // Handle signup
+        const { error, data } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username: username || email.split('@')[0],
+            }
+          }
+        });
+        
+        if (error) {
+          const errorMessage = error.message?.toLowerCase() || '';
+          
+          // Check for rate limit errors
+          if (error.status === 429 || errorMessage.includes('rate limit') || errorMessage.includes('too many') || errorMessage.includes('exceeds')) {
+            toast({
+              title: 'Too many signup attempts',
+              description: 'You have made too many signup attempts. Please try again in a few minutes.',
+              variant: 'destructive',
+            });
+          } else if (errorMessage.includes('already registered')) {
+            toast({
+              title: 'Account exists',
+              description: 'This email is already registered. Please sign in instead.',
+            });
+            setActiveTab('login');
+          } else {
+            toast({
+              title: 'Signup error',
+              description: error.message,
+              variant: 'destructive',
+            });
+          }
+        } else {
+          // Check if email confirmation is required
+          if (data.user && !data.user.email_confirmed_at) {
+            // Show popup instead of redirecting or changing tabs
+            setSignupEmail(email);
+            setShowSignupPopup(true);
+            // Clear form
+            setEmail('');
+            setPassword('');
+            setUsername('');
+          } else {
+            toast({
+              title: 'Account created!',
+              description: 'Welcome to Chef Recipe Hunter!',
+            });
+            navigate('/recipes');
+          }
+        }
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email address',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Use custom edge function for better rate limiting handling
+      const { data, error } = await supabase.functions.invoke('check-email-and-send-reset', {
+        body: { email: email.trim().toLowerCase() }
+      });
+      
+      if (error) {
+        const errorMessage = error.message || 'Failed to send reset email';
+        // Check if it's a rate limit error
+        if (error.status === 429 || errorMessage.includes('rate limit') || errorMessage.includes('wait')) {
+          toast({
+            title: 'Please wait',
+            description: `You can request another reset in ${data?.remainingTime || 60} seconds.`,
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        setMagicLinkSent(true);
+        setMagicLinkEmail(email);
+        toast({
+          title: 'Reset email sent',
+          description: 'Check your email for the password reset link',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to send reset email',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/10 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-secondary/20 rounded-full blur-2xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse delay-500" />
+      </div>
+
+      {/* Floating magic elements */}
+      <div className="absolute top-10 left-10 w-6 h-6 text-primary/30 animate-spin-slow">
+        <Wand2 className="w-full h-full" />
+      </div>
+      <div className="absolute top-20 right-20 w-4 h-4 text-secondary/30 animate-bounce">
+        <Sparkles className="w-full h-full" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo and Title */}
+        <div className="text-center mb-8 transition-all duration-500">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 mb-6 shadow-lg shadow-primary/25 transition-transform duration-300 hover:scale-105">
+            <ChefHat className="h-10 w-10 text-primary-foreground" />
+          </div>
+          
+          <h1 className="font-display text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent transition-opacity duration-500">
+            Chef Recipe Hunter
+          </h1>
+          
+          <p className="mt-3 text-lg text-muted-foreground transition-opacity duration-500">
+            {activeTab === 'login' ? 'Welcome back! Sign in to continue.' : 'Create an account to explore recipes.'}
+          </p>
+        </div>
+
+        <div className="w-full max-w-md relative z-10 transition-all duration-300">
+          <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm">
+            <CardHeader className="text-center space-y-2 pb-6">
+              <CardTitle className="text-2xl font-semibold flex items-center justify-center gap-2">
+                {activeTab === 'login' ? (
+                  <>
+                    <Shield className="h-6 w-6 text-primary" />
+                    Welcome Back
+                  </>
+                ) : activeTab === 'magic-link' ? (
+                  <>
+                    <Wand2 className="h-6 w-6 text-primary" />
+                    Magic Link Sign In
+                  </>
+                ) : (
+                  <>
+                    <User className="h-6 w-6 text-primary" />
+                    Create Account
+                  </>
+                )}
+              </CardTitle>
+              <CardDescription className="text-base">
+                {activeTab === 'login' 
+                  ? 'Enter your credentials to access your account' 
+                  : activeTab === 'magic-link'
+                  ? 'Sign in instantly with just your email'
+                  : 'Create your account to start your culinary journey'
+                }
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="pb-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-auto">
+                  <TabsTrigger 
+                    value="login" 
+                    className="data-[state=active]:bg-background data-[state=inactive]:hover:bg-muted transition-all duration-200 h-auto py-2 text-xs sm:text-sm"
+                  >
+                    Sign In
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="magic-link" 
+                    className="data-[state=active]:bg-background data-[state=inactive]:hover:bg-muted transition-all duration-200 h-auto py-2 text-xs sm:text-sm whitespace-normal text-center"
+                  >
+                    Magic Link
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="signup" 
+                    className="data-[state=active]:bg-background data-[state=inactive]:hover:bg-muted transition-all duration-200 h-auto py-2 text-xs sm:text-sm"
+                  >
+                    Sign Up
+                  </TabsTrigger>
+                </TabsList>
+                
+                <div className="overflow-hidden">
+                  <TabsContent value="login" className="space-y-6 mt-6">
+                  <div className="space-y-6 mt-6 transition-all duration-300">
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            setErrors(prev => ({ ...prev, email: undefined }));
+                          }}
+                          className={`pl-10 h-11 border-border/50 focus:border-primary transition-colors ${errors.email ? 'border-destructive' : ''}`}
+                          required
+                        />
+                      </div>
+                      {errors.email && (
+                        <Alert className="mt-2">
+                          <AlertDescription className="text-sm">
+                            {errors.email}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••"
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            setErrors(prev => ({ ...prev, password: undefined }));
+                          }}
+                          className={`pl-10 pr-10 h-11 border-border/50 focus:border-primary transition-colors ${errors.password ? 'border-destructive' : ''}`}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      {errors.password && (
+                        <Alert className="mt-2">
+                          <AlertDescription className="text-sm">
+                            {errors.password}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Button 
+                        type="submit" 
+                        className="w-full gap-2 group" 
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent animate-spin rounded-full" />
+                            <span className="text-sm">Please wait...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Sign In</span>
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        Forgot your password?
+                      </button>
+                    </div>
+                  </form>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="magic-link" className="space-y-6 mt-6">
+                  <div className="space-y-6 mt-6 transition-all duration-300">
+                  <div className="text-center mb-6">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 mb-4">
+                      <Wand2 className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Sign In with Magic Link</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Enter your email address and we'll send you a magic link to sign in instantly.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="magic-link-email" className="text-sm font-medium">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="magic-link-email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={magicLinkEmail}
+                          onChange={(e) => setMagicLinkEmail(e.target.value)}
+                          className="pl-10 h-11 border-border/50 focus:border-primary transition-colors"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={handleMagicLink}
+                      disabled={loading || !magicLinkEmail}
+                      className="w-full gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent animate-spin rounded-full" />
+                          <span className="text-sm">Sending magic link...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="h-4 w-4" />
+                          <span>Send Magic Link</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">
+                      No password needed. Check your email for the sign-in link.
+                    </p>
+                  </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="signup" className="space-y-6 mt-6">
+                  <div className="space-y-6 mt-6 transition-all duration-300">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="username" className="text-sm font-medium">Username (optional)</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="Your display name"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="pl-10 h-11 border-border/50 focus:border-primary transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email" className="text-sm font-medium">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            setErrors(prev => ({ ...prev, email: undefined }));
+                          }}
+                          className={`pl-10 h-11 border-border/50 focus:border-primary transition-colors ${errors.email ? 'border-destructive' : ''}`}
+                          required
+                        />
+                      </div>
+                      {errors.email && (
+                        <Alert className="mt-2">
+                          <AlertDescription className="text-sm">
+                            {errors.email}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password" className="text-sm font-medium">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••"
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            setErrors(prev => ({ ...prev, password: undefined }));
+                          }}
+                          className={`pl-10 pr-10 h-11 border-border/50 focus:border-primary transition-colors ${errors.password ? 'border-destructive' : ''}`}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      {errors.password && (
+                        <Alert className="mt-2">
+                          <AlertDescription className="text-sm">
+                            {errors.password}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Button 
+                        type="submit" 
+                        className="w-full gap-2 group" 
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent animate-spin rounded-full" />
+                            <span className="text-sm">Creating account...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Create Account</span>
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">
+                        By signing up, you agree to our Terms of Service and Privacy Policy.
+                      </p>
+                    </div>
+                  </form>
+                  </div>
+                </TabsContent>
+                </div>
+              </Tabs>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col gap-4">
+              <Separator className="mb-4" />
+              
+              <div className="text-center text-sm text-muted-foreground">
+                <span className="block">
+                  {activeTab === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab(activeTab === 'login' ? 'signup' : 'login')}
+                  className="text-primary hover:text-primary/80 transition-colors font-medium underline-offset-4 hover:underline"
+                >
+                  {activeTab === 'login' ? 'Sign up' : 'Sign in'}
+                </button>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+
+        {/* Magic Link Modal */}
+        {magicLinkSent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl transition-all duration-300 transform scale-100">
+              <div className="text-center mb-6">
+                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 mb-4 animate-spin">
+                  <CheckCircle className="h-8 w-8 text-white" />
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-2">Magic Link Sent!</h3>
+                <p className="text-muted-foreground mb-6">
+                  We've sent a magic link to <span className="font-medium text-primary">{magicLinkEmail}</span>
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="magic-email" className="text-sm font-medium">Email Address</Label>
+                  <Input
+                    id="magic-email"
+                    type="email"
+                    value={magicLinkEmail}
+                    onChange={(e) => setMagicLinkEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full"
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleMagicLink}
+                  disabled={loading}
+                  className="w-full gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent animate-spin rounded-full" />
+                      <span className="text-sm">Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4" />
+                      <span>Sign In with Magic Link</span>
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setMagicLinkSent(false)}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowManualConfirm(!showManualConfirm)}
+                    className="text-sm text-primary hover:text-primary/80 transition-colors underline"
+                  >
+                    {showManualConfirm ? 'Hide manual confirmation' : 'Having trouble with email? Enter code manually'}
+                  </button>
+                </div>
+
+                {showManualConfirm && (
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmation-token" className="text-sm font-medium">Confirmation Code</Label>
+                      <Input
+                        id="confirmation-token"
+                        type="text"
+                        placeholder="Enter confirmation code from email"
+                        value={confirmationToken}
+                        onChange={(e) => setConfirmationToken(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <Button 
+                      onClick={handleManualConfirmation}
+                      disabled={loading || !confirmationToken}
+                      variant="secondary"
+                      className="w-full gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-primary border-t-transparent animate-spin rounded-full" />
+                          <span className="text-sm">Verifying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-4 w-4" />
+                          <span>Verify Code</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Signup Confirmation Popup */}
+      <AlertDialog open={showSignupPopup} onOpenChange={setShowSignupPopup}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 animate-pulse">
+                <Mail className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-2xl">Check Your Email</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              <p className="mb-2 font-semibold text-foreground">Please wait 1 minute to get the confirmation link</p>
+              <p className="text-sm">We've sent a confirmation link to:</p>
+              <p className="font-medium text-primary mt-1">{signupEmail}</p>
+              <p className="text-xs text-muted-foreground mt-3">Don't forget to check your spam folder if you don't see it in your inbox.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-2 mt-6">
+            <Button 
+              onClick={() => setShowSignupPopup(false)}
+              className="w-full"
+            >
+              Got It
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => {
+                handleResendConfirmation(signupEmail);
+              }}
+              className="w-full"
+            >
+              Resend Link
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default Auth;

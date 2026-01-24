@@ -1,0 +1,212 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warm Indian cuisine inspired palette */
+    --background: 35 30% 97%;
+    --foreground: 20 30% 15%;
+
+    --card: 35 40% 98%;
+    --card-foreground: 20 30% 15%;
+
+    --popover: 35 40% 98%;
+    --popover-foreground: 20 30% 15%;
+
+    /* Saffron orange - warm and appetizing */
+    --primary: 28 85% 55%;
+    --primary-foreground: 35 30% 98%;
+
+    /* Warm cream secondary */
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 20 30% 20%;
+
+    --muted: 35 20% 90%;
+    --muted-foreground: 20 15% 45%;
+
+    /* Terracotta accent */
+    --accent: 15 70% 50%;
+    --accent-foreground: 35 30% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 20% 85%;
+    --input: 30 20% 85%;
+    --ring: 28 85% 55%;
+
+    --radius: 0.75rem;
+
+    /* Custom colors for food app */
+    --veg: 142 70% 40%;
+    --veg-foreground: 142 70% 98%;
+    --non-veg: 0 70% 45%;
+    --non-veg-foreground: 0 0% 100%;
+    
+    /* Spice level colors */
+    --spice-mild: 45 90% 55%;
+    --spice-medium: 28 85% 55%;
+    --spice-hot: 0 80% 50%;
+
+    /* Gradient definitions */
+    --gradient-hero: linear-gradient(135deg, hsl(28 85% 55% / 0.9), hsl(15 70% 50% / 0.85));
+    --gradient-warm: linear-gradient(180deg, hsl(35 30% 97%), hsl(35 25% 94%));
+    --gradient-card: linear-gradient(145deg, hsl(35 40% 99%), hsl(35 35% 96%));
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(20 30% 15% / 0.1);
+    --shadow-card: 0 8px 30px -8px hsl(20 30% 15% / 0.12);
+    --shadow-elevated: 0 20px 50px -15px hsl(20 30% 15% / 0.2);
+
+    /* Typography */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    /* Sidebar */
+    --sidebar-background: 35 30% 97%;
+    --sidebar-foreground: 20 30% 15%;
+    --sidebar-primary: 28 85% 55%;
+    --sidebar-primary-foreground: 35 30% 98%;
+    --sidebar-accent: 35 25% 92%;
+    --sidebar-accent-foreground: 20 30% 20%;
+    --sidebar-border: 30 20% 85%;
+    --sidebar-ring: 28 85% 55%;
+  }
+
+  .dark {
+    --background: 20 25% 8%;
+    --foreground: 35 30% 95%;
+
+    --card: 20 25% 12%;
+    --card-foreground: 35 30% 95%;
+
+    --popover: 20 25% 12%;
+    --popover-foreground: 35 30% 95%;
+
+    --primary: 28 85% 55%;
+    --primary-foreground: 20 25% 8%;
+
+    --secondary: 20 20% 18%;
+    --secondary-foreground: 35 30% 90%;
+
+    --muted: 20 20% 18%;
+    --muted-foreground: 35 15% 60%;
+
+    --accent: 15 70% 50%;
+    --accent-foreground: 35 30% 98%;
+
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 20 20% 18%;
+    --input: 20 20% 18%;
+    --ring: 28 85% 55%;
+
+    --veg: 142 70% 45%;
+    --non-veg: 0 70% 50%;
+
+    --sidebar-background: 20 25% 8%;
+    --sidebar-foreground: 35 30% 95%;
+    --sidebar-primary: 28 85% 55%;
+    --sidebar-primary-foreground: 20 25% 8%;
+    --sidebar-accent: 20 20% 18%;
+    --sidebar-accent-foreground: 35 30% 90%;
+    --sidebar-border: 20 20% 18%;
+    --sidebar-ring: 28 85% 55%;
+  }
+
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Infinite scroll animation */
+  .animate-scroll-right-to-left {
+    animation: scroll-right-to-left 30s linear infinite;
+  }
+
+  @keyframes scroll-right-to-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
