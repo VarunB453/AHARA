@@ -153,7 +153,6 @@ VITE_ENABLE_MOCK_AUTH=true
 - **`/favorites`** - User's saved recipes collection
 - **`/profile`** - User settings and preferences
 
-
 ## 🎨 UI Components & Features
 
 ### Component Library
