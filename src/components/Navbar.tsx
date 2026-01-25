@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, User, Heart, ChefHat, LogOut, Sparkles, Home, BookOpen, Users, Map, HelpCircle, Mail, Bell, Settings, Globe, Moon, Sun, ShieldAlert } from 'lucide-react';
+import { Search, Menu, X, User, Heart, ChefHat, LogOut, Sparkles, Home, BookOpen, Users, Map, HelpCircle, Mail, Bell, Settings, Globe, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdmin } from '@/hooks/useAdmin';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -29,7 +28,6 @@ const Navbar = ({ isVegMode, onToggleVegMode }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isAdmin } = useAdmin();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleSignOut = async () => {

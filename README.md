@@ -1,26 +1,107 @@
-# AHARA - Indian Food Recipes
+# AHARA - Indian Food Recipes Platform
 
-A comprehensive Indian culinary platform featuring traditional recipes and innovative fusion dishes.
+A comprehensive modern web application showcasing authentic Indian recipes and innovative fusion dishes. Built with React 18, TypeScript, and Supabase for a seamless culinary experience.
 
-## 🚀 Features
+## 🌟 Features
 
-- **55+ Traditional Recipes**: Authentic Indian dishes from all regions
-- **15+ Fusion Creations**: Experimental "weird food" combinations
-- **User Authentication**: Secure email-based login with magic links
-- **Favorites System**: Save and organize your preferred recipes
-- **Chef Profiles**: Featured chefs with authentic credentials
-- **Advanced Search**: Filter by region, spice level, dietary preferences
+### 🍽️ Recipe Collection
+- **55+ Traditional Recipes**: Authentic Indian dishes from all regions including Punjab, Gujarat, South India, Bengal, and more
+- **15+ Fusion Creations**: Experimental "weird food" combinations like Chocolate Samosa, Paneer Ice Cream, and Jalebi Pizza
+- **Detailed Recipe Information**: Complete ingredients, instructions, cooking time, and nutritional information
+- **High-Quality Images**: Professional photography for all recipes
+
+### 🔐 Authentication System
+- **Magic Link Authentication**: Passwordless login via email (Supabase Auth)
+- **Mock Authentication**: Development mode with mock user system
+- **Secure Session Management**: JWT tokens with automatic refresh
+- **Password Reset**: Secure password recovery via email
+
+### 🎯 User Experience
+- **Advanced Filtering**: Filter by veg/non-veg, region, spice level, and cooking time
+- **Favorites System**: Save and organize preferred recipes
+- **Dark/Light Mode**: Toggle between themes with smooth transitions
 - **Responsive Design**: Mobile-first approach with desktop optimization
+- **Search Functionality**: Real-time recipe search with instant results
+
+### 👨‍🍳 Chef Profiles
+- **Featured Chefs**: Professional chef profiles with authentic credentials
+- **Chef Specialties**: Regional and cuisine specializations
+- **Verification System**: Verified chef badges for authenticity
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
-- **State Management**: React Query
-- **Animations**: Framer Motion, GSAP
+### Frontend Framework
+- **React 18.3.1** - Modern React with hooks and concurrent features
+- **TypeScript 5.8.3** - Type-safe development with full IntelliSense
+- **Vite 5.4.19** - Lightning-fast build tool and HMR
 
-## 📦 Installation
+### UI & Styling
+- **Tailwind CSS 3.4.17** - Utility-first CSS framework
+- **shadcn/ui** - Modern, accessible component library
+- **Radix UI** - Unstyled, accessible component primitives
+- **Lucide React** - Beautiful, consistent icon system
+- **Framer Motion 12.27.1** - Smooth animations and transitions
+- **GSAP 3.14.2** - Advanced animation toolkit
+
+### Backend & Database
+- **Supabase 2.90.1** - Complete Backend-as-a-Service
+  - PostgreSQL Database with custom schema
+  - Authentication with magic links
+  - File storage for images and assets
+  - Edge functions for serverless logic
+
+### State Management & Routing
+- **React Query 5.83.0** - Powerful server state management
+- **React Router DOM 6.30.1** - Client-side routing with lazy loading
+- **React Hook Form 7.61.1** - Form management with validation
+- **Zod 3.25.76** - TypeScript-first schema validation
+
+### Development Tools
+- **ESLint 9.32.0** - Code linting and formatting
+- **PostCSS 8.5.6** - CSS processing pipeline
+- **Autoprefixer 10.4.21** - Cross-browser compatibility
+
+## 📁 Project Structure
+
+```
+AHARA/
+├── 📁 src/
+│   ├── 📁 components/          # Reusable UI components
+│   │   ├── 📁 ui/             # shadcn/ui components (53+)
+│   │   ├── 📄 RecipeCard.tsx  # Recipe display component
+│   │   ├── 📄 ChefCard.tsx    # Chef profile component
+│   │   ├── 📄 Navbar.tsx      # Navigation with auth
+│   │   └── 📄 Footer.tsx      # Site footer
+│   ├── 📁 pages/              # Page components (20+)
+│   │   ├── 📄 Index.tsx       # Homepage with filtering
+│   │   ├── 📄 Recipes.tsx     # Recipe browsing
+│   │   ├── 📄 RecipeDetail.tsx # Detailed recipe view
+│   │   ├── 📄 CrazyRecipes.tsx # Fusion recipes
+│   │   ├── 📄 Auth.tsx        # Authentication page
+│   ├── 📁 hooks/              # Custom React hooks
+│   │   ├── 📄 useAuth.tsx     # Authentication logic
+│   │   ├── 📄 useDarkMode.tsx # Theme management
+│   │   ├── 📄 useLanguage.tsx # i18n support
+│   │   └── 📄 useFavorites.tsx # Favorites management
+│   ├── 📁 services/           # API and business logic
+│   ├── 📁 data/               # Static data and types
+│   │   ├── 📄 recipes.ts      # 55+ traditional recipes
+│   │   └── 📄 weirdFoods.ts   # 15+ fusion recipes
+│   └── 📁 integrations/       # Third-party integrations
+├── 📁 supabase/               # Supabase configuration
+│   ├── 📁 functions/          # Edge functions
+│   └── 📁 migrations/         # Database schema
+└── 📄 package.json            # Dependencies and scripts
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Git
+
+### Installation
 
 ```bash
 # Clone the repository
@@ -30,32 +111,114 @@ cd AHARA
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env
-# Configure your Supabase credentials in .env
-
 # Start development server
 npm run dev
 ```
 
-## 🔧 Environment Variables
+The application will be available at `http://localhost:8080`
 
-Create a `.env` file with your Supabase credentials:
+### Environment Setup
+
+Create environment variables in your `.env.local` file:
 
 ```env
+# Supabase Configuration (Required for production)
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-anon-key
+VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# Optional: Development overrides
+VITE_DEV_MODE=true
+VITE_ENABLE_MOCK_AUTH=true
+```
+
+**Note**: The app includes fallback mock authentication for development without Supabase setup.
+
+## 📱 Available Pages
+
+### Public Routes
+- **`/`** - Homepage with featured recipes and advanced filtering
+- **`/auth`** - Authentication (magic link login/signup)
+- **`/forgot-password`** - Password recovery
+- **`/reset-password`** - Password reset form
+- **`/contact`** - Contact information and support
+- **`/settings`** - Application settings
+
+### Protected Routes (Authentication Required)
+- **`/recipes`** - Recipe browsing with search and filters
+- **`/recipes/:id`** - Detailed recipe view with instructions
+- **`/chefs`** - Chef profiles and specialties
+- **`/regions`** - Regional recipe exploration
+- **`/crazy-recipes`** - Fusion recipe experiments (15+ creations)
+- **`/crazy-recipes/:id`** - Detailed fusion recipe view
+- **`/favorites`** - User's saved recipes collection
+- **`/profile`** - User settings and preferences
+
+
+## 🎨 UI Components & Features
+
+### Component Library
+- **53+ shadcn/ui components** including forms, navigation, feedback, and layout
+- **Custom components**: RecipeCard, ChefCard, HeroSection, FilterSection
+- **Animation components**: Page transitions, loading states, micro-interactions
+
+### Design System
+- **Consistent theming** with CSS variables
+- **Dark mode support** with system preference detection
+- **Responsive breakpoints** for mobile, tablet, and desktop
+- **Accessibility features** with ARIA labels and keyboard navigation
+
+### Animations
+- **Framer Motion** for smooth page transitions
+- **GSAP** for advanced animations
+- **CSS transitions** for hover states and interactions
+- **Loading skeletons** for better perceived performance
+
+## 🗄️ Database Schema
+
+### Core Tables
+```sql
+users          # User profiles and preferences
+recipes        # Recipe information and metadata
+chefs          # Chef profiles and specializations
+favorites      # User's saved recipes
+reviews        # Recipe ratings and comments
+```
+
+### Key Features
+- **PostgreSQL database** with optimized indexes
+- **Row Level Security** for data protection
+- **Real-time subscriptions** for live updates
+- **File storage** for recipe images and chef avatars
+
+## 🔧 Development Scripts
+
+```json
+{
+  "dev": "vite",                    # Start development server
+  "build": "vite build",           # Build for production
+  "build:dev": "vite build --mode development", # Development build
+  "lint": "eslint .",              # Code linting
+  "preview": "vite preview"         # Preview production build
+}
 ```
 
 ## 🚀 Deployment
 
-### Vercel
-1. Connect your GitHub repository to Vercel
-2. Environment variables are auto-configured from `vercel.json`
+### Vercel (Recommended)
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
 
 ### Netlify
-1. Connect your GitHub repository to Netlify
-2. Environment variables are auto-configured from `netlify.toml`
+```bash
+# Build and deploy
+npm run build
+# Deploy dist/ folder to Netlify
+```
 
 ### Manual Deployment
 ```bash
@@ -65,34 +228,61 @@ npm run build
 # Deploy the dist/ folder to your hosting provider
 ```
 
-## 📱 Pages
+### Environment Variables for Production
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
 
-- `/` - Homepage with featured recipes
-- `/recipes` - Recipe browsing and search
-- `/recipes/:id` - Detailed recipe view
-- `/chefs` - Chef profiles and specialties
-- `/regions` - Regional recipe exploration
-- `/crazy-recipes` - Fusion recipe experiments
-- `/favorites` - User's saved recipes
-- `/profile` - User settings and preferences
-- `/auth` - Authentication (login/signup)
+## 🎯 Key Highlights
+
+### Recipe Collection
+- **55+ Traditional Recipes** from 8+ Indian regions
+- **15+ Fusion Creations** pushing culinary boundaries
+- **Professional Photography** for all recipes
+- **Detailed Instructions** with cooking times and servings
+
+### Technical Excellence
+- **TypeScript** for type safety and better DX
+- **Lazy Loading** for optimal performance
+- **Code Splitting** with manual chunks optimization
+- **Responsive Design** with mobile-first approach
+- **Accessibility** with WCAG compliance
+
+### User Experience
+- **Magic Link Authentication** - No passwords required
+- **Real-time Search** with instant results
+- **Advanced Filtering** by multiple criteria
+- **Favorites System** for personalization
+- **Dark Mode** for comfortable viewing
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+We welcome contributions! Please follow these steps:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow TypeScript best practices
+- Use semantic HTML and accessible components
+- Write tests for new features
+- Maintain consistent code formatting
+- Update documentation as needed
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Contact
+## 📞 Support & Contact
 
-- GitHub: [@VarunB453](https://github.com/VarunB453)
-- Repository: [AHARA](https://github.com/VarunB453/AHARA)
+- **GitHub**: [@VarunB453](https://github.com/VarunB453)
+- **Repository**: [AHARA](https://github.com/VarunB453/AHARA)
+- **Issues**: [GitHub Issues](https://github.com/VarunB453/AHARA/issues)
 
 ---
 
-**Built with ❤️ for Indian cuisine lovers**
+**Built with ❤️ for Indian cuisine lovers worldwide**
+
+* showcasing the rich diversity of Indian culinary traditions through modern web technology*

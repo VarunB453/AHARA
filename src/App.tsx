@@ -25,8 +25,6 @@ const Contact = lazy(() => import("./pages/Contact"));
 const Settings = lazy(() => import("./pages/Settings"));
 const CrazyRecipes = lazy(() => import("./pages/CrazyRecipes"));
 const CrazyRecipeDetail = lazy(() => import("./pages/CrazyRecipeDetail"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading component
@@ -54,18 +52,12 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Suspense fallback={<PageLoader />}><Index /></Suspense>} />
                   <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
-                  <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminLogin /></Suspense>} />
                   <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>} />
                   <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
                   <Route path="/contact" element={<Suspense fallback={<PageLoader />}><Contact /></Suspense>} />
                   <Route path="/settings" element={
                     <ProtectedRoute>
                       <Suspense fallback={<PageLoader />}><Settings /></Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin-dashboard" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>
                     </ProtectedRoute>
                   } />
                   <Route path="/crazy-recipes" element={
