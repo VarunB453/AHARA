@@ -316,8 +316,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Connect With Us
 - **GitHub**: [@VarunB453](https://github.com/VarunB453)
 - **Repository**: [AHARA](https://github.com/VarunB453/AHARA)
-- **Twitter/X**: [@ahara](https://twitter.com/ahara)
-- **Website**: [ahara.com](https://ahara.com)
 
 ### 🌟 Show Your Support
 - ⭐ **Star** this repository if you find it helpful
