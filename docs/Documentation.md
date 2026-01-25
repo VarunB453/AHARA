@@ -174,6 +174,54 @@ To create the most engaging and comprehensive Indian culinary platform that cele
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
+
+### Frontend Architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    React Application                        │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │   Pages     │  │ Components  │  │      Hooks          │  │
+│  │             │  │             │  │                     │  │
+│  │ • Index     │  │ • UI Lib    │  │ • useAuth           │  │
+│  │ • Recipes   │  │ • Layout    │  │ • useDarkMode       │  │
+│  │ • Chefs     │  │ • Forms     │  │ • useLanguage       │  │
+│  │ • Profile   │  │ • Cards     │  │ • useFavorites      │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │   Services  │  │     Data    │  │     Utilities       │  │
+│  │             │  │             │  │                     │  │
+│  │ • Supabase  │  │ • Recipes   │  │ • Animations        │  │
+│  │ • API       │  │ • Chefs     │  │ • Utils             │  │
+│  │ • Auth      │  │ • Regions   │  │ • Constants         │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Backend Architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Supabase Backend                         │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ PostgreSQL  │  │   Auth      │  │     Storage         │  │
+│  │             │  │             │  │                     │  │
+│  │ • Recipes   │  │ • JWT       │  │ • Images            │  │
+│  │ • Users     │  │ • Magic     │  │ • Assets            │  │
+│  │ • Favorites │  │   Links     │  │ • Files             │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │              Edge Functions                            │ │
+│  │                                                        │ │
+│  │ • Email Verification                                   │ │
+│  │ • Password Reset                                       │ │
+│  │ • Account Deletion                                     │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ### Architecture Principles
 - **Decoupled Design**: Clear separation between frontend and backend
 - **Scalability**: Horizontal scaling capabilities with Supabase
