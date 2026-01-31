@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Clock, Eye, Heart, ChefHat, Leaf, Flame, Star, User, Edit, Trash2, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -151,17 +151,37 @@ const CrazyRecipes = () => {
     setShowUploadForm(true);
   };
 
+  const frontendRecipeData = useMemo(() => {
+    const data = new Map<string, { reviews: typeof weirdFoodReviews, averageRating: number, isFrontendRecipe: boolean }>();
+    const frontendIds = new Set(weirdFoodRecipes.map(r => r.id));
+    
+    // Group reviews by recipe ID first
+    const reviewsMap = new Map<string, typeof weirdFoodReviews>();
+    weirdFoodReviews.forEach(review => {
+      if (!reviewsMap.has(review.recipe_id)) {
+        reviewsMap.set(review.recipe_id, []);
+      }
+      reviewsMap.get(review.recipe_id)!.push(review);
+    });
+
+    frontendIds.forEach(id => {
+      const reviews = reviewsMap.get(id) || [];
+      const averageRating = reviews.length > 0
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+        : 0;
+
+      data.set(id, {
+        reviews,
+        averageRating,
+        isFrontendRecipe: true
+      });
+    });
+    
+    return data;
+  }, []);
+
   const getReviewsAndRating = (recipeId: string) => {
-    // Check if it's a frontend recipe
-    const isFrontendRecipe = weirdFoodRecipes.some(recipe => recipe.id === recipeId);
-    
-    if (isFrontendRecipe) {
-      const reviews = getReviewsForWeirdFood(recipeId);
-      const averageRating = getAverageRatingForWeirdFood(recipeId);
-      return { reviews, averageRating, isFrontendRecipe: true };
-    }
-    
-    return { reviews: [], averageRating: 0, isFrontendRecipe: false };
+    return frontendRecipeData.get(recipeId) || { reviews: [], averageRating: 0, isFrontendRecipe: false };
   };
 
   const handleDeleteRecipe = async (recipeId: string, recipeTitle: string) => {
