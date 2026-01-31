@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import * as recipeService from '@/services/recipeService';
-import type { CrazyRecipe, RecipeReview } from '@/services/recipeService';
+import type { CrazyRecipe, RecipeReview, GetRecipesOptions } from '@/services/recipeService';
 
 export const useRecipeService = () => {
   const { user } = useAuth();
@@ -155,16 +155,14 @@ export const useRecipeService = () => {
     }
   }, [toast]);
 
-  const getRecipesWithPagination = useCallback(async (
-    page: number = 1,
-    limit: number = 10,
-    approvedOnly: boolean = true
+  const getRecipes = useCallback(async (
+    options: GetRecipesOptions
   ): Promise<{recipes: CrazyRecipe[], total: number}> => {
     setLoading(true);
     setError(null);
     
     try {
-      const result = await recipeService.getRecipesWithPagination(page, limit, approvedOnly);
+      const result = await recipeService.getRecipes(options);
       return {
         recipes: result.data,
         total: result.count
@@ -182,6 +180,20 @@ export const useRecipeService = () => {
       setLoading(false);
     }
   }, [toast]);
+
+  const getRecipesWithPagination = useCallback(async (
+    page: number = 1,
+    limit: number = 10,
+    approvedOnly: boolean = true
+  ): Promise<{recipes: CrazyRecipe[], total: number}> => {
+    return getRecipes({
+      page,
+      pageSize: limit,
+      approvedOnly,
+      filterType: 'all',
+      sortBy: 'newest'
+    });
+  }, [getRecipes]);
 
   // ========================================
   // CREATE OPERATIONS
@@ -503,6 +515,7 @@ export const useRecipeService = () => {
     getRecipesByAuthorName,
     searchRecipes,
     filterRecipesByType,
+    getRecipes,
     getRecipesWithPagination,
     
     // Create operations
