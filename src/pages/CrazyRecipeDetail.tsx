@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdmin } from '@/hooks/useAdmin';
 import { useToast } from '@/hooks/use-toast';
 import { useRecipeService } from '@/hooks/useRecipeService';
 import type { CrazyRecipe, RecipeReview } from '@/services/recipeService';
@@ -24,7 +23,6 @@ import {
 const CrazyRecipeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { isAdmin } = useAdmin();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { getRecipeById, deleteRecipe, incrementViews: serviceIncrementViews, getRecipeReviews, submitReview } = useRecipeService();
