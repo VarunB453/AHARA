@@ -162,7 +162,6 @@ const CrazyRecipeForm = ({ onSuccess, onCancel, editMode = false, initialData }:
         result = await updateRecipe(initialData.id, recipeData, formData.image || undefined);
       } else {
         // For create, author info is required
-        // @ts-ignore - Temporary fix for type mismatch if types aren't fully updated yet
         result = await createRecipe(recipeData, formData.image || undefined);
       }
 
