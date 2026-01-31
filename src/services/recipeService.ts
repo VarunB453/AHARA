@@ -18,7 +18,7 @@ export type { CrazyRecipe, CrazyRecipeInsert, CrazyRecipeUpdate };
  * @returns Promise<CrazyRecipe[]>
  */
 export const getAllRecipes = async (userId?: string): Promise<CrazyRecipe[]> => {
-  let query = supabase
+  const query = supabase
     .from('crazy_recipes')
     .select('*')
     .order('created_at', { ascending: false });
@@ -183,8 +183,89 @@ export const filterRecipesByType = async (
   return data || [];
 };
 
+export interface GetRecipesOptions {
+  page: number;
+  pageSize: number;
+  searchTerm?: string;
+  filterType?: 'all' | 'veg' | 'non-veg';
+  sortBy?: 'newest' | 'popular' | 'views';
+  approvedOnly?: boolean;
+}
+
 /**
- * Get recipes with pagination
+ * Get recipes with pagination, filtering, searching and sorting
+ * @param options - Options for fetching recipes
+ * @returns Promise<{ data: CrazyRecipe[], count: number }>
+ */
+export const getRecipes = async (
+  options: GetRecipesOptions
+): Promise<{ data: CrazyRecipe[]; count: number }> => {
+  const {
+    page,
+    pageSize,
+    searchTerm,
+    filterType = 'all',
+    sortBy = 'newest',
+    approvedOnly = true
+  } = options;
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase
+    .from('crazy_recipes')
+    .select('*', { count: 'exact' });
+
+  // Apply approval filter
+  if (approvedOnly) {
+    query = query.eq('is_approved', true);
+  }
+
+  // Apply veg/non-veg filter
+  if (filterType === 'veg') {
+    query = query.eq('is_veg', true);
+  } else if (filterType === 'non-veg') {
+    query = query.eq('is_veg', false);
+  }
+
+  // Apply search
+  if (searchTerm) {
+    // Search in title and description
+    query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+  }
+
+  // Apply sorting
+  switch (sortBy) {
+    case 'popular':
+      query = query.order('likes_count', { ascending: false });
+      break;
+    case 'views':
+      query = query.order('views_count', { ascending: false });
+      break;
+    case 'newest':
+    default:
+      query = query.order('created_at', { ascending: false });
+      break;
+  }
+
+  // Apply pagination
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    console.error('Error fetching recipes:', error);
+    throw new Error(`Failed to fetch recipes: ${error.message}`);
+  }
+
+  return {
+    data: data || [],
+    count: count || 0
+  };
+};
+
+/**
+ * Get recipes with pagination (Legacy wrapper around getRecipes)
  * @param page - Page number (1-based)
  * @param pageSize - Items per page
  * @param approvedOnly - Whether to show only approved recipes
@@ -195,30 +276,13 @@ export const getRecipesWithPagination = async (
   pageSize: number,
   approvedOnly: boolean = false
 ): Promise<{ data: CrazyRecipe[]; count: number }> => {
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
-
-  let query = supabase
-    .from('crazy_recipes')
-    .select('*', { count: 'exact' });
-
-  if (approvedOnly) {
-    query = query.eq('is_approved', true);
-  }
-
-  const { data, error, count } = await query
-    .order('created_at', { ascending: false })
-    .range(from, to);
-
-  if (error) {
-    console.error('Error fetching paginated recipes:', error);
-    throw new Error(`Failed to fetch paginated recipes: ${error.message}`);
-  }
-
-  return {
-    data: data || [],
-    count: count || 0
-  };
+  return getRecipes({
+    page,
+    pageSize,
+    approvedOnly,
+    filterType: 'all',
+    sortBy: 'newest'
+  });
 };
 
 // ========================================
@@ -605,9 +669,8 @@ export interface RecipeReview {
  * @returns Promise<RecipeReview[]>
  */
 export const getRecipeReviews = async (recipeId: string): Promise<RecipeReview[]> => {
-  // Use 'any' cast because the type might not be in the generated types yet
   const { data, error } = await supabase
-    .from('crazy_recipe_reviews' as any)
+    .from('crazy_recipe_reviews')
     .select('*')
     .eq('recipe_id', recipeId)
     .order('created_at', { ascending: false });
@@ -635,7 +698,7 @@ export const submitReview = async (
   review: Omit<RecipeReview, 'id' | 'created_at'>
 ): Promise<void> => {
   const { error } = await supabase
-    .from('crazy_recipe_reviews' as any)
+    .from('crazy_recipe_reviews')
     .insert(review);
 
   if (error) {
@@ -651,7 +714,7 @@ export const submitReview = async (
  */
 export const getReviewsByReviewers = async (reviewerNames: string[]): Promise<RecipeReview[]> => {
   const { data, error } = await supabase
-    .from('crazy_recipe_reviews' as any)
+    .from('crazy_recipe_reviews')
     .select('*')
     .in('reviewer_name', reviewerNames);
 
