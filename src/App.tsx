@@ -71,24 +71,22 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   <Route path="/recipes" element={
-                    <ProtectedRoute>
+                
                       <Suspense fallback={<PageLoader />}><Recipes /></Suspense>
-                    </ProtectedRoute>
+                    
                   } />
                   <Route path="/recipes/:id" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<PageLoader />}><RecipeDetail /></Suspense>
-                    </ProtectedRoute>
+                    <Suspense fallback={<PageLoader />}><RecipeDetail /></Suspense>
                   } />
                   <Route path="/chefs" element={
-                    <ProtectedRoute>
+                   
                       <Suspense fallback={<PageLoader />}><Chefs /></Suspense>
-                    </ProtectedRoute>
+                   
                   } />
                   <Route path="/regions" element={
-                    <ProtectedRoute>
+                   
                       <Suspense fallback={<PageLoader />}><Regions /></Suspense>
-                    </ProtectedRoute>
+                    
                   } />
                   <Route path="/profile" element={
                     <ProtectedRoute>

@@ -92,10 +92,10 @@ const Navbar = ({ isVegMode, onToggleVegMode }: NavbarProps) => {
 
   const navLinks = [
     { href: '/', label: t('nav.home'), icon: Home, protected: false },
-    { href: '/recipes', label: t('nav.recipes'), icon: BookOpen, protected: true },
-    { href: '/chefs', label: t('nav.chefs'), icon: Users, protected: true },
-    { href: '/regions', label: t('nav.regions'), icon: Map, protected: true },
-    { href: '/crazy-recipes', label: t('nav.crazy'), icon: Sparkles, protected: true },
+    { href: '/recipes', label: t('nav.recipes'), icon: BookOpen, protected: false },
+    { href: '/chefs', label: t('nav.chefs'), icon: Users, protected: false },
+    { href: '/regions', label: t('nav.regions'), icon: Map, protected: false },
+    { href: '/crazy-recipes', label: t('nav.crazy'), icon: Sparkles, protected: false },
     { href: '/contact', label: t('nav.contact'), icon: Mail, protected: false },
   ];
 

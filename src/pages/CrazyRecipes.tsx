@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Clock, Eye, Heart, ChefHat, Leaf, Flame, Star, User, Edit, Trash2, LogIn } from 'lucide-react';
+import { Plus, Search, Filter, Clock, Eye, Heart, ChefHat, Leaf, Flame, Star, User, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -51,8 +51,8 @@ const CrazyRecipes = () => {
         ...recipe,
         image_url: recipe.image_url,
         author_id: '00000000-0000-0000-0000-000000000001',
-        author_name: 'Spice Route Navigator',
-        author_email: 'admin@spiceroute.com',
+        author_name: 'aahara',
+        author_email: 'admin@ahara.com',
         views_count: 0,
         likes_count: 0,
         is_approved: true,
@@ -484,30 +484,6 @@ const CrazyRecipes = () => {
           </div>
         )}
 
-        {/* Explore More Button for Guest Users */}
-        {!user && filteredRecipes.length >= 3 && (
-          <div className="mt-12 text-center">
-            <div className="rounded-xl border border-border bg-card p-8 shadow-soft">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <LogIn className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">
-                Want to explore more crazy recipes?
-              </h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Sign in to discover all the creative recipes from our community and share your own culinary experiments!
-              </p>
-              <Button
-                onClick={() => navigate('/auth')}
-                size="lg"
-                className="gap-2"
-              >
-                <LogIn className="h-5 w-5" />
-                Sign In to Explore More
-              </Button>
-            </div>
-          </div>
-        )}
       </main>
 
       <Footer />
