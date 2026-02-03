@@ -12,7 +12,7 @@ const Contact = () => {
       icon: <Mail className="h-6 w-6" />,
       title: "Email Us",
       description: "Get in touch with our team",
-      contact: "varunb1135@gmail.com",
+      contact: "aharaa.noreply@gmail.com",
       subtext: "We respond within 24 hours"
     },
     {
