@@ -7,7 +7,7 @@ const ITERATIONS = 1000;
 
 // Generate mock data
 const allRecipeIds = Array.from({ length: NUM_RECIPES }, (_, i) => `recipe-${i}`);
-const favoriteIds = Array.from({ length: NUM_FAVORITES }, () => `recipe-${Math.floor(Math.random() * NUM_RECIPES)}`);
+const favoriteIds = Array.from({ length: NUM_FAVORITES }, (_, i) => `recipe-${(i * 13) % NUM_RECIPES}`);
 
 // Setup implementations
 const favoritesArray = [...favoriteIds];
