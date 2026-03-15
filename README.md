@@ -2,6 +2,14 @@
 
 A comprehensive modern web application showcasing authentic Indian recipes and innovative fusion dishes. Built with React 18, TypeScript, and Supabase for a seamless culinary experience.
 
+---
+| 🔥 **Live Preview** 🔥 |
+|:---------------------:|
+|![Live-Page](https://github.com/VarunB453/AHARA/blob/main/public/aharaa.png)|
+| [🚀 Visit EduCode Live!](https://aharaa.in) |
+
+---
+
 ## 🌟 Features
 
 ### 🍽️ Recipe Collection
