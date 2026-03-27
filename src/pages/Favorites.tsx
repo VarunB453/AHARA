@@ -25,7 +25,7 @@ const Favorites = () => {
   const navigate = useNavigate();
 
   // Get favorite recipes
-  const favoriteRecipes = recipes.filter(recipe => favorites.includes(recipe.id));
+  const favoriteRecipes = recipes.filter(recipe => isFavorite(recipe.id));
 
   // Filter recipes based on search and filters
   const filteredRecipes = favoriteRecipes.filter(recipe => {

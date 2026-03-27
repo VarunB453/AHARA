@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
 export const useFavorites = () => {
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoritesSet, setFavoritesSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -14,12 +14,12 @@ export const useFavorites = () => {
   // Fetch user's favorites
   const fetchFavorites = useCallback(async () => {
     if (!user) {
-      setFavorites([]);
+      setFavoritesSet(new Set());
       return;
     }
 
     if (!isValidUuid(user.id)) {
-      setFavorites([]);
+      setFavoritesSet(new Set());
       return;
     }
 
@@ -32,7 +32,7 @@ export const useFavorites = () => {
 
       if (error) throw error;
 
-      setFavorites(data?.map(f => f.recipe_id) || []);
+      setFavoritesSet(new Set(data?.map(f => f.recipe_id) || []));
     } catch (error) {
       console.error('Error fetching favorites:', error);
     } finally {
@@ -45,8 +45,8 @@ export const useFavorites = () => {
   }, [fetchFavorites]);
 
   const isFavorite = useCallback((recipeId: string) => {
-    return favorites.includes(recipeId);
-  }, [favorites]);
+    return favoritesSet.has(recipeId);
+  }, [favoritesSet]);
 
   const toggleFavorite = useCallback(async (recipeId: string) => {
     if (!user) {
@@ -67,7 +67,7 @@ export const useFavorites = () => {
       return false;
     }
 
-    const isCurrentlyFavorite = isFavorite(recipeId);
+    const isCurrentlyFavorite = favoritesSet.has(recipeId);
 
     try {
       if (isCurrentlyFavorite) {
@@ -80,7 +80,11 @@ export const useFavorites = () => {
 
         if (error) throw error;
 
-        setFavorites(prev => prev.filter(id => id !== recipeId));
+        setFavoritesSet(prev => {
+          const next = new Set(prev);
+          next.delete(recipeId);
+          return next;
+        });
         toast({
           title: "Removed from favorites",
           description: "Recipe removed from your favorites.",
@@ -105,12 +109,10 @@ export const useFavorites = () => {
           throw error;
         }
 
-        setFavorites(prev => {
-          // Only add if not already in favorites to prevent duplicates
-          if (!prev.includes(recipeId)) {
-            return [...prev, recipeId];
-          }
-          return prev;
+        setFavoritesSet(prev => {
+          const next = new Set(prev);
+          next.add(recipeId);
+          return next;
         });
         toast({
           title: "Added to favorites",
@@ -127,10 +129,12 @@ export const useFavorites = () => {
       });
       return false;
     }
-  }, [user, isFavorite, toast]);
+  }, [user, favoritesSet, toast, fetchFavorites]);
+
+  const favoritesArray = useMemo(() => Array.from(favoritesSet), [favoritesSet]);
 
   return {
-    favorites,
+    favorites: favoritesArray,
     loading,
     isFavorite,
     toggleFavorite,
