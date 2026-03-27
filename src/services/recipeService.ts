@@ -537,28 +537,36 @@ export const getRecipeStats = async (userId?: string): Promise<{
   userRecipes: number;
   approved: number;
 }> => {
-  const { count: total } = await supabase
+  const totalPromise = supabase
     .from('crazy_recipes')
     .select('*', { count: 'exact', head: true });
 
-  const { count: approved } = await supabase
+  const approvedPromise = supabase
     .from('crazy_recipes')
     .select('*', { count: 'exact', head: true })
     .eq('is_approved', true);
 
-  let userRecipes = 0;
-  if (userId) {
-    const { count } = await supabase
-      .from('crazy_recipes')
-      .select('*', { count: 'exact', head: true })
-      .eq('author_id', userId);
-    userRecipes = count || 0;
-  }
+  const userRecipesPromise = userId
+    ? supabase
+        .from('crazy_recipes')
+        .select('*', { count: 'exact', head: true })
+        .eq('author_id', userId)
+    : Promise.resolve({ count: 0 });
+
+  const [
+    { count: total },
+    { count: approved },
+    { count: userRecipesCount }
+  ] = await Promise.all([
+    totalPromise,
+    approvedPromise,
+    userRecipesPromise
+  ]);
 
   return {
     total: total || 0,
     approved: approved || 0,
-    userRecipes
+    userRecipes: userRecipesCount || 0
   };
 };
 
