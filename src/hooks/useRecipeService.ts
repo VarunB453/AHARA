@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import * as recipeService from '@/services/recipeService';
-import type { CrazyRecipe, RecipeReview } from '@/services/recipeService';
+import type { CrazyRecipe, RecipeReview, CrazyRecipeInsert, CrazyRecipeUpdate } from '@/services/recipeService';
 
 export const useRecipeService = () => {
   const { user } = useAuth();
@@ -188,7 +188,7 @@ export const useRecipeService = () => {
   // ========================================
 
   const createRecipe = useCallback(async (
-    recipeData: any,
+    recipeData: CrazyRecipeInsert,
     imageFile?: File
   ): Promise<CrazyRecipe | null> => {
     if (!user) {
@@ -244,7 +244,7 @@ export const useRecipeService = () => {
 
   const updateRecipe = useCallback(async (
     id: string,
-    recipeData: any,
+    recipeData: CrazyRecipeUpdate,
     imageFile?: File
   ): Promise<CrazyRecipe | null> => {
     if (!user) {
