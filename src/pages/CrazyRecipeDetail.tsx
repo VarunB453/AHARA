@@ -1,44 +1,27 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Clock, Eye, Heart, Share2, ChefHat, Leaf, Flame, Star, User, ArrowLeft, MessageSquare, Edit, Trash2 } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+import { Clock, Eye, Heart, Share2, ChefHat, Leaf, Flame, Star, User, ArrowLeft, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useRecipeService } from '@/hooks/useRecipeService';
 import type { CrazyRecipe, RecipeReview } from '@/services/recipeService';
-import CrazyRecipeForm from '@/components/CrazyRecipeForm';
 import { 
   weirdFoodRecipes, 
-  weirdFoodReviews, 
   getReviewsForWeirdFood, 
-  getAverageRatingForWeirdFood,
-  type WeirdFoodRecipe 
 } from '@/data/weirdFoods';
 
 const CrazyRecipeDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { getRecipeById, deleteRecipe, incrementViews: serviceIncrementViews, getRecipeReviews, submitReview } = useRecipeService();
+  const { getRecipeById, incrementViews: serviceIncrementViews, getRecipeReviews } = useRecipeService();
   
   const [recipe, setRecipe] = useState<CrazyRecipe | null>(null);
   const [reviews, setReviews] = useState<RecipeReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [isFrontendRecipe, setIsFrontendRecipe] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [userReview, setUserReview] = useState({
-    rating: 5,
-    comment: ''
-  });
-  const [hasReviewed, setHasReviewed] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -122,7 +105,6 @@ const CrazyRecipeDetail = () => {
         }));
         
         setReviews(typedReviews);
-        setHasReviewed(false); // Frontend recipes don't support user reviews
         return;
       }
 
@@ -141,12 +123,6 @@ const CrazyRecipeDetail = () => {
       }));
       
       setReviews(typedReviews);
-      
-      // Check if current user has already reviewed
-      if (user) {
-        const userReviewExists = typedReviews.some(review => review.reviewer_id === user.id);
-        setHasReviewed(userReviewExists || false);
-      }
     } catch (error: any) {
       console.error('Error fetching reviews:', error);
     }
@@ -160,28 +136,10 @@ const CrazyRecipeDetail = () => {
   };
 
   const handleLike = async () => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to like recipes',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      // This would need a proper likes system implementation
-      toast({
-        title: 'Feature coming soon',
-        description: 'Recipe likes will be available soon!',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: 'Could not like recipe. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: 'Likes are read-only',
+      description: 'Account-based liking has been removed from this site.',
+    });
   };
 
   const handleShare = async () => {
@@ -205,110 +163,6 @@ const CrazyRecipeDetail = () => {
     }
   };
 
-  const handleEdit = () => {
-    if (isFrontendRecipe) {
-      toast({
-        title: 'Cannot edit',
-        description: 'Featured recipes cannot be edited.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setIsEditing(true);
-  };
-
-  const handleDelete = async () => {
-    if (!user || !recipe) return;
-    
-    // Prevent deletion of frontend recipes
-    if (isFrontendRecipe) {
-      toast({
-        title: 'Cannot delete',
-        description: 'Featured recipes cannot be deleted.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this recipe? This action cannot be undone.'
-    );
-    
-    if (!confirmed) return;
-
-    setDeleting(true);
-
-    try {
-      const success = await deleteRecipe(recipe.id);
-
-      if (success) {
-        // Navigate back to crazy recipes list
-        navigate('/crazy-recipes');
-      }
-    } catch (error: any) {
-      console.error('Error deleting recipe:', error);
-      // Toast is already handled in deleteRecipe
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to leave a review',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Prevent reviews on frontend recipes
-    if (isFrontendRecipe) {
-      toast({
-        title: 'Reviews not available',
-        description: 'Featured recipes do not support user reviews.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!userReview.comment.trim()) {
-      toast({
-        title: 'Comment required',
-        description: 'Please write a review comment',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setSubmittingReview(true);
-
-    try {
-      const success = await submitReview({
-        recipe_id: id,
-        reviewer_id: user.id,
-        reviewer_name: user.user_metadata?.username || user.email?.split('@')[0] || 'Anonymous',
-        rating: userReview.rating,
-        comment: userReview.comment.trim(),
-      });
-
-      if (!success) throw new Error('Failed to submit review');
-
-      setUserReview({ rating: 5, comment: '' });
-      setHasReviewed(true);
-      fetchReviews();
-
-    } catch (error: any) {
-      console.error('Error submitting review:', error);
-      // Toast is handled in submitReview
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
-
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -317,26 +171,6 @@ const CrazyRecipeDetail = () => {
       />
     ));
   };
-
-  if (isEditing && recipe) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar isVegMode={true} onToggleVegMode={() => {}} />
-        <div className="container py-8">
-          <CrazyRecipeForm
-            editMode={true}
-            initialData={recipe}
-            onSuccess={() => {
-              setIsEditing(false);
-              fetchRecipe();
-            }}
-            onCancel={() => setIsEditing(false)}
-          />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -426,26 +260,6 @@ const CrazyRecipeDetail = () => {
                 </h1>
                 
                 <div className="flex items-center gap-4">
-                  {/* Edit and Delete buttons for recipe author */}
-                  {user && user.id === recipe.author_id && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={handleEdit} className="gap-2">
-                        <Edit className="h-4 w-4" />
-                        Edit
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
-                        onClick={handleDelete} 
-                        disabled={deleting}
-                        className="gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {deleting ? 'Deleting...' : 'Delete'}
-                      </Button>
-                    </>
-                  )}
-                  
                   <Button variant="outline" size="sm" onClick={handleLike} className="gap-2">
                     <Heart className="h-4 w-4" />
                     {recipe.likes_count}
@@ -509,47 +323,6 @@ const CrazyRecipeDetail = () => {
           {/* Reviews Section */}
           <div className="mt-12">
             <h2 className="font-display text-2xl font-bold text-foreground mb-8">Reviews</h2>
-
-            {/* Add Review Form */}
-            {user && !hasReviewed && (
-              <div className="rounded-xl border border-border bg-card p-6 mb-8">
-                <h3 className="font-semibold text-lg text-foreground mb-4">Leave a Review</h3>
-                <form onSubmit={handleReviewSubmit} className="space-y-4">
-                  <div>
-                    <Label>Rating</Label>
-                    <div className="flex gap-1 mt-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => setUserReview(prev => ({ ...prev, rating: star }))}
-                          className="p-1"
-                        >
-                          <Star
-                            className={`h-6 w-6 ${star <= userReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-yellow-400'} transition-colors`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="reviewComment">Your Review</Label>
-                    <Textarea
-                      id="reviewComment"
-                      placeholder="Share your experience with this recipe..."
-                      value={userReview.comment}
-                      onChange={(e) => setUserReview(prev => ({ ...prev, comment: e.target.value }))}
-                      rows={4}
-                    />
-                  </div>
-                  
-                  <Button type="submit" disabled={submittingReview}>
-                    {submittingReview ? 'Submitting...' : 'Submit Review'}
-                  </Button>
-                </form>
-              </div>
-            )}
 
             {/* Reviews List */}
             <div className="space-y-4">

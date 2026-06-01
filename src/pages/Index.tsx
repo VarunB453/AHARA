@@ -535,18 +535,17 @@ const Index = () => {
                   Ready to Start Your Culinary Journey?
                 </h2>
                 <p className="mx-auto mb-6 max-w-xl text-primary-foreground/80">
-                  Join thousands of food enthusiasts who have discovered their favorite Indian 
-                  recipes through Chef Recipe Hunter
+                  Discover authentic Indian recipes, regional flavors, and creative fusion dishes.
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                   <button 
-                    onClick={() => navigate('/auth')}
+                    onClick={() => navigate('/recipes')}
                     className="rounded-lg bg-primary-foreground px-6 py-3 font-medium text-primary transition-opacity hover:opacity-90"
                   >
-                    Create Free Account
+                    Browse Recipes
                   </button>
-                  <button onClick={() => navigate('/auth')} className="rounded-lg border border-primary-foreground/30 bg-transparent px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10">
-                    Browse as Guest
+                  <button onClick={() => navigate('/crazy-recipes')} className="rounded-lg border border-primary-foreground/30 bg-transparent px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10">
+                    Explore Crazy Recipes
                   </button>
                 </div>
               </div>

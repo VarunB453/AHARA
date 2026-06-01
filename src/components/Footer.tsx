@@ -106,9 +106,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/auth" className="text-muted-foreground transition-colors hover:text-primary hover:underline underline-offset-4 flex items-center gap-2">
+                <Link to="/contact" className="text-muted-foreground transition-colors hover:text-primary hover:underline underline-offset-4 flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary/50" />
-                  Become a Chef
+                  Contact AHARA
                 </Link>
               </li>
               <li>

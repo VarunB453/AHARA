@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DarkModeProvider } from "@/hooks/useDarkMode";
 import { LanguageProvider } from "@/hooks/useLanguage";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import { Loader2 } from "lucide-react";
 
 // Lazy load all pages for better performance
@@ -16,13 +15,7 @@ const Recipes = lazy(() => import("./pages/Recipes"));
 const Chefs = lazy(() => import("./pages/Chefs"));
 const Regions = lazy(() => import("./pages/Regions"));
 const RecipeDetail = lazy(() => import("./pages/RecipeDetail"));
-const Favorites = lazy(() => import("./pages/Favorites"));
-const Auth = lazy(() => import("./pages/Auth"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const Profile = lazy(() => import("./pages/Profile"));
 const Contact = lazy(() => import("./pages/Contact"));
-const Settings = lazy(() => import("./pages/Settings"));
 const CrazyRecipes = lazy(() => import("./pages/CrazyRecipes"));
 const CrazyRecipeDetail = lazy(() => import("./pages/CrazyRecipeDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -51,25 +44,9 @@ const App = () => {
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Suspense fallback={<PageLoader />}><Index /></Suspense>} />
-                  <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
-                  <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>} />
-                  <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
                   <Route path="/contact" element={<Suspense fallback={<PageLoader />}><Contact /></Suspense>} />
-                  <Route path="/settings" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<PageLoader />}><Settings /></Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/crazy-recipes" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<PageLoader />}><CrazyRecipes /></Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/crazy-recipes/:id" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<PageLoader />}><CrazyRecipeDetail /></Suspense>
-                    </ProtectedRoute>
-                  } />
+                  <Route path="/crazy-recipes" element={<Suspense fallback={<PageLoader />}><CrazyRecipes /></Suspense>} />
+                  <Route path="/crazy-recipes/:id" element={<Suspense fallback={<PageLoader />}><CrazyRecipeDetail /></Suspense>} />
                   <Route path="/recipes" element={
                 
                       <Suspense fallback={<PageLoader />}><Recipes /></Suspense>
@@ -87,16 +64,6 @@ const App = () => {
                    
                       <Suspense fallback={<PageLoader />}><Regions /></Suspense>
                     
-                  } />
-                  <Route path="/profile" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<PageLoader />}><Profile /></Suspense>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/favorites" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<PageLoader />}><Favorites /></Suspense>
-                    </ProtectedRoute>
                   } />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />

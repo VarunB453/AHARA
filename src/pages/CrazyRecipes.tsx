@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Clock, Eye, Heart, ChefHat, Leaf, Flame, Star, User, Edit, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Clock, Eye, Heart, ChefHat, Leaf, Flame, Star, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import CrazyRecipeForm from '@/components/CrazyRecipeForm';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { useRecipeService } from '@/hooks/useRecipeService';
 import type { CrazyRecipe } from '@/services/recipeService';
 import { 
   weirdFoodRecipes, 
@@ -20,14 +16,9 @@ import {
 } from '@/data/weirdFoods';
 
 const CrazyRecipes = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { getAllRecipes, deleteRecipe } = useRecipeService();
   const [recipes, setRecipes] = useState<CrazyRecipe[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<CrazyRecipe[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showUploadForm, setShowUploadForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'veg' | 'non-veg'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'views'>('newest');
@@ -46,7 +37,6 @@ const CrazyRecipes = () => {
     try {
       setLoading(true);
       
-      // Combine frontend weird foods with any database recipes
       const frontendRecipes: CrazyRecipe[] = weirdFoodRecipes.map(recipe => ({
         ...recipe,
         image_url: recipe.image_url,
@@ -58,23 +48,9 @@ const CrazyRecipes = () => {
         is_approved: true,
         updated_at: recipe.created_at
       }));
-
-      // Fetch database recipes using service
-      let dbRecipes: CrazyRecipe[] = [];
-      try {
-        dbRecipes = await getAllRecipes();
-      } catch (dbError) {
-        console.error('Database connection failed:', dbError);
-        // Don't show toast here to avoid annoying users, just log it
-        // and show frontend recipes only
-      }
-      
-      // Combine frontend and database recipes, with frontend recipes first
-      const allRecipes = [...frontendRecipes, ...dbRecipes];
-      setRecipes(allRecipes);
+      setRecipes(frontendRecipes);
     } catch (error: any) {
       console.error('Error in recipe loading flow:', error);
-      // Fallback to just frontend recipes if something major breaks
       const frontendRecipes: CrazyRecipe[] = weirdFoodRecipes.map(recipe => ({
         ...recipe,
         image_url: recipe.image_url,
@@ -134,23 +110,6 @@ const CrazyRecipes = () => {
     setFilteredRecipes(filtered);
   };
 
-  const handleRecipeSubmit = () => {
-    setShowUploadForm(false);
-    fetchRecipes(); // Refresh the list
-  };
-
-  const handleUploadClick = () => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to share your crazy recipe',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setShowUploadForm(true);
-  };
-
   const getReviewsAndRating = (recipeId: string) => {
     // Check if it's a frontend recipe
     const isFrontendRecipe = weirdFoodRecipes.some(recipe => recipe.id === recipeId);
@@ -163,48 +122,6 @@ const CrazyRecipes = () => {
     
     return { reviews: [], averageRating: 0, isFrontendRecipe: false };
   };
-
-  const handleDeleteRecipe = async (recipeId: string, recipeTitle: string) => {
-    if (!user) return;
-    
-    // Check if it's a frontend recipe (can't delete frontend recipes)
-    const isFrontendRecipe = weirdFoodRecipes.some(recipe => recipe.id === recipeId);
-    if (isFrontendRecipe) {
-      toast({
-        title: 'Cannot delete',
-        description: 'This is a featured recipe and cannot be deleted.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${recipeTitle}"? This action cannot be undone.`
-    );
-    
-    if (!confirmed) return;
-
-    const success = await deleteRecipe(recipeId);
-    
-    if (success) {
-      fetchRecipes();
-    }
-  };
-
-  if (showUploadForm) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar isVegMode={true} onToggleVegMode={() => {}} />
-        <div className="container py-8">
-          <CrazyRecipeForm
-            onSuccess={handleRecipeSubmit}
-            onCancel={() => setShowUploadForm(false)}
-          />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -220,19 +137,9 @@ const CrazyRecipes = () => {
             Crazy Recipes
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Discover the most creative and unconventional recipes from our community. 
+            Discover the most creative and unconventional AHARA recipes. 
             From fusion experiments to wild combinations, these recipes push the boundaries of Indian cuisine!
           </p>
-          
-          {/* Upload Button */}
-          <Button
-            onClick={handleUploadClick}
-            size="lg"
-            className="gap-2"
-          >
-            <Plus className="h-5 w-5" />
-            Share Your Crazy Recipe
-          </Button>
         </div>
 
         {/* Search and Filters */}
@@ -330,15 +237,9 @@ const CrazyRecipes = () => {
             <p className="text-muted-foreground mb-6">
               {searchTerm || filterType !== 'all' 
                 ? 'Try adjusting your search or filters'
-                : 'Be the first to share a crazy recipe with the community!'
+                : 'No crazy recipes are available right now.'
               }
             </p>
-            {!searchTerm && filterType === 'all' && (
-              <Button onClick={handleUploadClick} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Share First Recipe
-              </Button>
-            )}
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -445,31 +346,6 @@ const CrazyRecipes = () => {
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        {/* Edit and Delete buttons for recipe author */}
-                        {user && user.id === recipe.author_id && !isFrontendRecipe && (
-                          <>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => toast({
-                                title: 'Edit feature coming soon',
-                                description: 'Recipe editing will be available soon!',
-                              })}
-                              className="gap-1 h-8 px-2"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleDeleteRecipe(recipe.id, recipe.title)}
-                              className="gap-1 h-8 px-2 text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </>
-                        )}
-                        
                         <Link to={`/crazy-recipes/${recipe.id}`}>
                           <Button variant="ghost" size="sm">
                             View Recipe

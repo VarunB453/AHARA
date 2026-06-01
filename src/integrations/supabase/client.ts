@@ -16,7 +16,7 @@ const fallbackKey = 'placeholder-key';
 // Debug environment variables
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   console.warn('Supabase environment variables not found - check your .env.local file');
-  console.warn('Using fallback Supabase configuration - this will not work for real authentication');
+  console.warn('Using fallback Supabase configuration - database features will be unavailable');
 }
 
 // Import the supabase client like this:
@@ -24,12 +24,5 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 
 export const supabase = createClient<Database>(
   SUPABASE_URL || fallbackUrl, 
-  SUPABASE_PUBLISHABLE_KEY || fallbackKey, 
-  {
-    auth: {
-      storage: localStorage,
-      persistSession: true,
-      autoRefreshToken: true,
-    }
-  }
+  SUPABASE_PUBLISHABLE_KEY || fallbackKey
 );

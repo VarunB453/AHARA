@@ -1,11 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import * as recipeService from '@/services/recipeService';
 import type { CrazyRecipe, RecipeReview } from '@/services/recipeService';
 
 export const useRecipeService = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +20,7 @@ export const useRecipeService = () => {
     setError(null);
     
     try {
-      // Pass user.id to allow fetching own unapproved recipes
-      const recipes = await recipeService.getAllRecipes(user?.id);
+      const recipes = await recipeService.getAllRecipes();
       return recipes;
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to fetch recipes';
@@ -187,105 +184,25 @@ export const useRecipeService = () => {
   // CREATE OPERATIONS
   // ========================================
 
-  const createRecipe = useCallback(async (
-    recipeData: any,
-    imageFile?: File
-  ): Promise<CrazyRecipe | null> => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to create a recipe',
-        variant: 'destructive',
-      });
-      return null;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const recipeDataWithUser = {
-        ...recipeData,
-        author_id: user.id,
-        author_name: user.user_metadata?.username || user.email?.split('@')[0] || 'Anonymous',
-        author_email: user.email || '',
-      };
-
-      let newRecipe;
-      if (imageFile) {
-        newRecipe = await recipeService.createRecipeWithImage(recipeDataWithUser, imageFile);
-      } else {
-        newRecipe = await recipeService.createRecipe(recipeDataWithUser);
-      }
-
-      toast({
-        title: 'Success!',
-        description: 'Recipe created successfully and submitted for review.',
-      });
-
-      return newRecipe;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to create recipe';
-      setError(errorMessage);
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [user, toast]);
+  const createRecipe = useCallback(async (): Promise<CrazyRecipe | null> => {
+    toast({
+      title: 'Recipe submissions are unavailable',
+      description: 'Login and user recipe submission features have been removed.',
+    });
+    return null;
+  }, [toast]);
 
   // ========================================
   // UPDATE OPERATIONS
   // ========================================
 
-  const updateRecipe = useCallback(async (
-    id: string,
-    recipeData: any,
-    imageFile?: File
-  ): Promise<CrazyRecipe | null> => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to update a recipe',
-        variant: 'destructive',
-      });
-      return null;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      let updatedRecipe;
-      if (imageFile) {
-        updatedRecipe = await recipeService.updateRecipeWithImage(id, recipeData, imageFile);
-      } else {
-        updatedRecipe = await recipeService.updateRecipe(id, recipeData);
-      }
-
-      toast({
-        title: 'Success!',
-        description: 'Recipe updated successfully.',
-      });
-
-      return updatedRecipe;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to update recipe';
-      setError(errorMessage);
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [user, toast]);
+  const updateRecipe = useCallback(async (): Promise<CrazyRecipe | null> => {
+    toast({
+      title: 'Recipe editing is unavailable',
+      description: 'Login and user recipe editing features have been removed.',
+    });
+    return null;
+  }, [toast]);
 
   const approveRecipe = useCallback(async (id: string): Promise<CrazyRecipe | null> => {
     setLoading(true);
@@ -318,41 +235,13 @@ export const useRecipeService = () => {
   // DELETE OPERATIONS
   // ========================================
 
-  const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to delete a recipe',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      await recipeService.deleteRecipe(id);
-      
-      toast({
-        title: 'Success!',
-        description: 'Recipe deleted successfully.',
-      });
-
-      return true;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to delete recipe';
-      setError(errorMessage);
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user, toast]);
+  const deleteRecipe = useCallback(async (): Promise<boolean> => {
+    toast({
+      title: 'Recipe deletion is unavailable',
+      description: 'Login and user recipe deletion features have been removed.',
+    });
+    return false;
+  }, [toast]);
 
   // ========================================
   // INTERACTION OPERATIONS
@@ -396,40 +285,12 @@ export const useRecipeService = () => {
   const submitReview = useCallback(async (
     review: Omit<RecipeReview, 'id' | 'created_at'>
   ): Promise<boolean> => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to submit a review',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      await recipeService.submitReview(review);
-      
-      toast({
-        title: 'Success!',
-        description: 'Review submitted successfully.',
-      });
-
-      return true;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to submit review';
-      setError(errorMessage);
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user, toast]);
+    toast({
+      title: 'Review submission is unavailable',
+      description: 'Login and user review features have been removed.',
+    });
+    return false;
+  }, [toast]);
 
   const getReviewsByReviewers = useCallback(async (reviewerNames: string[]): Promise<RecipeReview[]> => {
     try {
@@ -450,13 +311,13 @@ export const useRecipeService = () => {
     approved: number;
   }> => {
     try {
-      const stats = await recipeService.getRecipeStats(userId || user?.id);
+      const stats = await recipeService.getRecipeStats(userId);
       return stats;
     } catch (err: any) {
       console.error('Failed to get recipe stats:', err);
       return { total: 0, userRecipes: 0, approved: 0 };
     }
-  }, [user]);
+  }, []);
 
   const bulkUpdateApproval = useCallback(async (
     recipeIds: string[],
